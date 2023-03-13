@@ -1,9 +1,8 @@
 import { Formik, Field } from 'formik';
 import PropTypes from 'prop-types';
 import swal from 'sweetalert';
-
-import { useDispatch, useSelector } from 'react-redux';
-import { addContact, getContactsState } from '../redux/contactsSlice';
+import { useAddContactMutation } from '../redux/contactsSliceAPI';
+import { useGetContactsQuery } from '../redux/contactsSliceAPI';
 
 import { FormEl } from './NameInput.styled';
 
@@ -13,15 +12,20 @@ const initialValues = {
 };
 
 export function NameInput() {
-  const contacts = useSelector(getContactsState);
-  const dispatch = useDispatch();
+  const [addContact] = useAddContactMutation();
+  const { data, error, isLoading } = useGetContactsQuery();
 
-  const handleSubmit = (values, { resetForm }) => {
-    let check = contacts.find(e => e.name === values.name);
-
+  const handleSubmit = async (values, { resetForm }) => {
+    let check = data.find(
+      e => e.name.toLowerCase() === values.name.toLowerCase()
+    );
     if (check === undefined) {
       resetForm();
-      dispatch(addContact(values));
+      try {
+        await addContact(values);
+      } catch (error) {
+        console.log(error);
+      }
     } else {
       swal(`"${values.name}" is alredy in contacts`, '', 'warning');
     }

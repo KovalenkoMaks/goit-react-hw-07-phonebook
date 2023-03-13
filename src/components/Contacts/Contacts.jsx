@@ -1,42 +1,49 @@
 import PropTypes from 'prop-types';
 import { ContactEl, ContactsList } from './Contacts.styled';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import {
-  deleteContact,
-  getContactsState,
-  getFilterState,
-} from '../redux/contactsSlice';
+  useGetContactsQuery,
+  useDeleteContactMutation,
+} from '../redux/contactsSliceAPI';
+import { Spinner } from '../Spinner/Spinner';
 
 export function Contacts() {
-  const contacts = useSelector(getContactsState);
-  const filter = useSelector(getFilterState);
-  const dispatch = useDispatch();
+  const { data, error, isLoading } = useGetContactsQuery();
+  const [deleteContact, { isLoadingDelete }] = useDeleteContactMutation();
+  const filterValue = useSelector(state => state.filter);
+  if (isLoading) return <Spinner />;
   return (
     <>
-      <h2>Contacts</h2>
-      <ContactsList>
-        {contacts.map(e => {
-          if (!e.name.toLowerCase().includes(filter.toLowerCase())) {
-            return null;
-          }
-
-          return (
-            <ContactEl key={e.id}>
-              <p>
-                {e.name}: {e.number}
-              </p>
-              <button
-                type="button"
-                onClick={() => {
-                  dispatch(deleteContact(e.id));
-                }}
-              >
-                Delete
-              </button>
-            </ContactEl>
-          );
-        })}
-      </ContactsList>
+      {isLoading ? (
+        <Spinner />
+      ) : (
+        <>
+          <h2>Contacts</h2>
+          <ContactsList>
+            {data.map(e => {
+              if (!e.name.toLowerCase().includes(filterValue.toLowerCase())) {
+                return null;
+              }
+              return (
+                <ContactEl key={e.id}>
+                  <p>
+                    {e.name}: {e.number}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      deleteContact(e.id);
+                    }}
+                    disabled={isLoadingDelete}
+                  >
+                    Delete
+                  </button>
+                </ContactEl>
+              );
+            })}
+          </ContactsList>
+        </>
+      )}
     </>
   );
 }
