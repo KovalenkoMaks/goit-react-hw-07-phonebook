@@ -8,7 +8,9 @@ import {
 import { Spinner } from '../Spinner/Spinner';
 
 export function Contacts() {
-  const { data, error, isLoading } = useGetContactsQuery();
+  const { data, isLoading } = useGetContactsQuery();
+  // const { data, error, isLoading } = useGetContactsQuery();
+
   const [deleteContact, { isLoadingDelete }] = useDeleteContactMutation();
   const filterValue = useSelector(state => state.filter);
   if (isLoading) return <Spinner />;
